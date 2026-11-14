@@ -2,99 +2,135 @@
 
 **College AI Mini Project**
 
-Ek Connect Four game jisme aap (Red) computer (Yellow) ke against khelte ho. Computer random move nahi chalta, wo **Minimax algorithm with Alpha-Beta Pruning** use karke aage ki chaalein "soch" kar best move chunta hai.
+This is a Connect Four game where you play as Red against the computer as Yellow. The computer does not make random moves; it analyzes future possibilities using the Minimax algorithm with Alpha-Beta Pruning.
 
-## Run kaise karein
+## How to Run
 
-### Option A: Browser / Phone (sabse aasan)
+### Option A: Browser / Mobile (easiest)
 
-`index.html` file ko kisi bhi browser (Chrome, Safari, Firefox) mein kholo. Kuch install nahi karna.
-Ye same game aur same AI (Minimax + Alpha-Beta) ka JavaScript version hai.
+Open the `index.html` file in any browser (Chrome, Safari, Firefox, etc.). No installation is required.
 
-**Online play link (GitHub Pages):** repo ki *Settings → Pages → Branch: main → Save* karne par
-`https://<username>.github.io/<repo-name>/` par game seedha khelne ke liye mil jata hai.
+This is the JavaScript version of the same game and uses the same AI logic (Minimax + Alpha-Beta Pruning).
+
+**Online play link (GitHub Pages):** after enabling GitHub Pages in the repository settings (`Settings → Pages → Branch: main → Save`), the game can be played directly at:
+`https://<username>.github.io/<repo-name>/`
 
 ### Option B: Python (desktop)
 
-```
+```bash
 python connect4.py
 ```
 
-- Python 3.8+ chahiye. Koi pip install nahi karna.
-- Windows / macOS: tkinter Python ke saath hi aata hai.
-- Linux (Ubuntu/Debian): agar `No module named tkinter` aaye to `sudo apt install python3-tk`.
+- Python 3.8+ is required.
+- No additional `pip` packages are needed.
+- Windows/macOS: Tkinter is included with Python.
+- Linux (Ubuntu/Debian): if you see `No module named tkinter`, run:
+
+```bash
+sudo apt install python3-tk
+```
 
 ## Features
 
 - 3 difficulty levels: Easy, Medium, Hard
-- "AI pehle khele" option
-- Piece girne ki animation, hover preview, jeetne wali 4 coins highlight
+- Option to let the AI move first
+- Disc drop animation and hover preview
+- Winning line highlighting for the 4 connected discs
 - Scoreboard (You / Computer / Draw)
-- Har AI move ke baad dikhta hai: search depth, kitne nodes explore hue, kitna time laga
+- After each AI move, the game displays search depth, explored nodes, and elapsed time
 
-## Files
+## Project Files
 
-| File | Kya hai |
+| File | Purpose |
 |------|---------|
-| `index.html` | Browser/phone version (HTML + CSS + JavaScript) |
-| `connect4.py` | Python desktop version (tkinter) |
-| `ALGORITHM.md` | Poora algorithm, pseudocode, complexity |
-| `README.md` | Ye file |
+| `index.html` | Browser/mobile version (HTML + CSS + JavaScript) |
+| `connect4.py` | Python desktop version (Tkinter) |
+| `ALGORITHM.md` | Full algorithm explanation, pseudocode, and complexity |
+| `README.md` | Project overview and instructions |
 
-Dono versions mein 3 parts hain: **1. Game Engine** (board, valid moves, win/draw check), **2. AI** (heuristic + Minimax + Alpha-Beta), **3. GUI**.
-Engine aur AI GUI se alag hain, isliye unhe bina GUI ke bhi test kiya ja sakta hai.
+Both versions consist of three parts:
 
-## AI kaise kaam karta hai
+1. Game Engine: board state, valid moves, win/draw detection
+2. AI: heuristic evaluation + Minimax + Alpha-Beta Pruning
+3. GUI: user interface and gameplay interaction
+
+The engine and AI logic are separated from the GUI, which makes them testable without the interface.
+
+## How the AI Works
 
 ### 1. Minimax
-Game ko ek tree ki tarah socho: har node ek board position hai, har branch ek possible move.
-- **AI ki baari (MAX):** wo move chuno jisme score sabse zyada ho.
-- **Human ki baari (MIN):** maan lo human sabse accha move chalega, yaani score sabse kam wala.
-- Depth tak aage dekhne ke baad board ko score diya jata hai aur wo score upar propagate hota hai.
+
+Think of the game as a tree: each node is a board position and each branch is a possible move.
+
+- AI turn (MAX): choose the move with the highest score
+- Human turn (MIN): assume the human also plays optimally and chooses the move that minimizes the AI's score
+- After examining moves up to a specific depth, the board position is scored and those values are propagated upward through the tree
 
 ### 2. Alpha-Beta Pruning
-Minimax ke bina har branch dekhna padta hai. Alpha-Beta mein agar pata chal jaye ki koi branch pehle se mili hui better option se achhi ho hi nahi sakti, to use **cut (prune)** kar dete hain. Result wahi milta hai, lekin kam nodes explore hote hain.
 
-Optimisation: moves ko **center se bahar ki taraf** order kiya hai, kyunki center column usually strong hota hai aur isse pruning zyada hoti hai.
+Without pruning, the AI would need to examine every possible branch. Alpha-Beta pruning removes branches that cannot possibly improve the current decision, thereby reducing computation without changing the final result.
+
+Optimization: moves are explored from the center outward because central columns are usually stronger, and this improves pruning efficiency.
 
 ### 3. Heuristic Evaluation Function
-Jab depth khatam ho jaye aur game finish na hua ho, to board ko score dete hain. Har 4-cell window (horizontal, vertical, diagonal) ke liye:
+
+When the search reaches the depth limit and the game is not yet finished, the position is scored by evaluating each four-cell window (horizontal, vertical, and diagonal):
 
 | Situation | Score |
 |-----------|-------|
-| AI ke 4 | +100 |
-| AI ke 3 + 1 khali | +5 |
-| AI ke 2 + 2 khali | +2 |
-| Human ke 3 + 1 khali | -4 (taaki AI block kare) |
-| Center column mein AI ka piece | +3 har piece |
+| AI has 4 in a row | +100 |
+| AI has 3 and 1 empty cell | +5 |
+| AI has 2 and 2 empty cells | +2 |
+| Human has 3 and 1 empty cell | -4 (to force a block) |
+| AI piece in the center column | +3 per piece |
 
-Win/loss ka score bahut bada (1,000,000) rakha hai, aur jaldi jeetne ko better maana jata hai.
+A win or loss is scored much higher (`1,000,000`) so the AI prefers quick wins and avoids forced losses.
 
-### 4. Difficulty
+### 4. Difficulty Levels
+
 | Level | Search depth | Extra |
 |-------|--------------|-------|
-| Easy | 2 | 30% chance random move (galti) |
+| Easy | 2 | 30% chance of a random move |
 | Medium | 4 | - |
 | Hard | 6 | - |
 
-## Testing results
+## Testing Results
 
-- AI ke paas jeetne ka move ho to wo le leta hai.
-- Human ke jeetne ka single threat ho to AI block karta hai.
-- Hard level par khali board par ~1,400 nodes aur ~0.05 sec.
-- Medium AI ne random player ke against 20 mein se 20 games jeete.
+- If the AI has a winning move, it takes it.
+- If the human has a single immediate winning threat, the AI blocks it.
+- On a blank board at Hard difficulty, the AI explores around 1,400 nodes in about 0.05 seconds.
+- Against a random player, the Medium AI won 20 out of 20 games.
 
-## Viva ke liye possible questions
+## Possible Viva Questions
 
-1. **Minimax kya hai?** Two-player zero-sum games ke liye algorithm jo maan kar chalta hai ki opponent bhi best khelega.
-2. **Alpha-Beta pruning kyun?** Same answer deta hai, lekin useless branches kaat kar time bachata hai.
-3. **Heuristic function kyun chahiye?** Poora game tree bahut bada hai (Connect Four mein lagbhag 4.5 trillion positions), isliye limited depth par board ko estimate karna padta hai.
-4. **Difficulty kaise badli?** Search depth badha kar. Zyada depth = zyada aage dekhta hai = zyada strong.
-5. **Time complexity?** Worst case O(b^d), best case alpha-beta ke saath lagbhag O(b^(d/2)), jahan b = branching factor (max 7) aur d = depth.
-6. **Improvements?** Transposition table, iterative deepening, better heuristic, ya Monte Carlo Tree Search.
+1. What is Minimax?
+   Two-player zero-sum games use a search strategy where each side assumes the opponent will also play optimally.
 
-## Future improvements
+2. Why use Alpha-Beta pruning?
+   It cuts away useless branches so the AI can search deeper within the same time limit.
 
-- Transposition table (same position dobara calculate na ho)
-- Iterative deepening with time limit
-- Monte Carlo Tree Search (MCTS) ke saath comparison
+3. Why use a heuristic function?
+   The full game tree is extremely large, so a complete search is not feasible. We estimate the board value at limited depth.
+
+4. How is difficulty adjusted?
+   By changing the search depth. Greater depth means more lookahead and a stronger AI.
+
+5. What is the time complexity?
+   Worst case: `O(b^d)`, where `b` is the branching factor (max 7) and `d` is the search depth.
+
+6. How can the AI be improved?
+   With a transposition table, iterative deepening, a better heuristic, or Monte Carlo Tree Search.
+
+## Future Improvements
+
+- Add a transposition table to avoid recalculating repeated board positions
+- Use iterative deepening with a time limit
+- Improve the heuristic with threat analysis and playable-cell evaluation
+- Add a human-vs-human mode or online multiplayer
+- Compare Minimax with Monte Carlo Tree Search
+
+## Conclusion
+
+This project demonstrates how adversarial search can be applied to a familiar board game. The game engine enforces the rules, while Minimax evaluates future moves and Alpha-Beta pruning reduces unnecessary searches.
+
+This gives a strong AI that remains fast enough for both browser and desktop versions.
