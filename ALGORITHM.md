@@ -1,14 +1,14 @@
 # Connect Four AI Algorithm
 
-This document explains the complete algorithm used in the project, implemented in `connect4.py`.
+This document explains the complete AI algorithm used in the project, implemented in `connect4.py`.
 
 ---
 
 ## 1. Problem Statement
 
-The game is played on a 6x7 board, with two players taking turns placing discs. One player is the human and the other is the AI. A player wins when they connect four discs in a straight line horizontally, vertically, or diagonally.
+The game is played on a 6x7 board, with two players taking turns placing discs. One player is the human and the other is the AI. A player wins by connecting four discs in a straight line, either horizontally, vertically, or diagonally.
 
-The AI must choose the best possible move at each turn. Since this is a two-player zero-sum game with perfect information, the most suitable solution is the Minimax algorithm, improved with alpha-beta pruning.
+The AI must choose the best possible move on each turn. Since this is a two-player zero-sum game with perfect information, the most suitable approach is the Minimax algorithm, improved with Alpha-Beta Pruning.
 
 ---
 
@@ -20,11 +20,11 @@ The AI must choose the best possible move at each turn. Since this is a two-play
 | Empty cell | 0 |
 | Human disc | 1 |
 | AI disc | 2 |
-| Move | Choosing a column (0 to 6) |
+| Move | Choosing a column from 0 to 6 |
 | Terminal state | One player wins or the board is full |
 | Utility value | AI win = very high positive, Human win = very high negative, draw = 0 |
 
-The board is stored as a 2D list where each entry is either empty, human, or AI.
+The board is stored as a 2D list in which each entry is either empty, human, or AI.
 
 ---
 
@@ -38,14 +38,14 @@ Create an empty board and select difficulty
   |
   v
 If it is the human turn:
-    click a column -> drop disc
+    click a column -> drop a disc
 If it is the AI turn:
-    select best move using minimax
+    select the best move using Minimax
   |
   v
 Check for a win or draw
   |
-  +--> If win/draw: show result and stop
+  +--> If win/draw: show the result and stop
   |
   +--> Otherwise: switch turns
 ```
@@ -59,17 +59,17 @@ Check for a win or draw
 - The AI is the maximizing player.
 - The human is the minimizing player.
 - The AI assumes the human will also play optimally.
-- The search explores all possible moves up to a limited depth.
+- The search explores all legal moves up to a limited depth.
 - At the leaf node, the board is evaluated using a heuristic function.
 - The evaluation score is propagated upward through the search tree.
 
 ### 4.2 Alpha-Beta Pruning
 
-Alpha-beta pruning is used to reduce unnecessary search.
+Alpha-Beta Pruning is used to reduce unnecessary search.
 
 - `alpha` stores the best value found so far for the maximizing player.
 - `beta` stores the best value found so far for the minimizing player.
-- If `alpha >= beta`, the remaining branches of that node cannot improve the current decision, so they are pruned.
+- If `alpha >= beta`, the remaining branches of that node cannot improve the current decision and are pruned.
 
 ### 4.3 Pseudocode
 
@@ -127,7 +127,7 @@ function minimax(board, depth, alpha, beta, isMax):
         return (bestCol, value)
 ```
 
-The first call is:
+The initial call is:
 
 ```text
 minimax(board, depth, -infinity, +infinity, True)
@@ -137,13 +137,13 @@ minimax(board, depth, -infinity, +infinity, True)
 
 ## 5. Move Ordering
 
-Columns are explored in this order:
+Columns are explored in the following order:
 
 ```text
 3, 2, 4, 1, 5, 0, 6
 ```
 
-This means the AI tries the center columns first. Center columns are usually stronger, and ordering them early helps alpha-beta pruning cut more branches quickly.
+This means the AI tries the center columns first. Center columns are usually stronger, and searching them earlier helps Alpha-Beta Pruning eliminate more branches quickly.
 
 ---
 
@@ -155,10 +155,10 @@ When the search reaches a leaf node and the position is not terminal, the board 
 
 The AI evaluates all possible windows of four cells, including:
 
-- horizontal windows
-- vertical windows
-- diagonal windows (both directions)
-- center column advantage
+- horizontal windows,
+- vertical windows,
+- diagonal windows in both directions,
+- the center-column advantage.
 
 ```text
 function evaluate(board):
@@ -190,22 +190,23 @@ function score_window(window):
     if my_pieces == 2 and empty_cells == 2:
         return +2
     if opp_pieces == 3 and empty_cells == 1:
-        return -4      // opponent is close to winning, block it
+        return -4      // opponent is close to winning; block it
 
     return 0
 ```
 
 This heuristic favors:
-- immediate wins
-- strong threats
-- central control
-- blocking the opponent's near-winning moves
+
+- immediate wins,
+- strong threats,
+- central control,
+- blocking the opponent's near-winning moves.
 
 ---
 
 ## 7. Winning Check
 
-The board is checked for a winner after every move. A win exists when four discs of the same color lie in a contiguous line.
+The board is checked for a winner after every move. A win exists when four discs of the same color are placed in a contiguous line.
 
 ```text
 function winning_cells(board, piece):
@@ -218,7 +219,7 @@ function winning_cells(board, piece):
     return None
 ```
 
-This checks all four possible directions of a connect-four line.
+This checks all four directions in which a Connect Four line can be formed.
 
 ---
 
@@ -229,10 +230,10 @@ The project supports three difficulty levels:
 | Level | Search depth | Behavior |
 | --- | ---: | --- |
 | Easy | 2 | 30% chance of making a random move |
-| Medium | 4 | Standard minimax search |
-| Hard | 6 | Deeper minimax search |
+| Medium | 4 | Standard Minimax search |
+| Hard | 6 | Deeper Minimax search |
 
-Higher depth gives the AI more foresight, making it stronger.
+Higher depth gives the AI more foresight and makes it stronger.
 
 ---
 
@@ -245,13 +246,13 @@ Let:
 
 ### Time Complexity
 
-- Standard minimax: `O(b^d)`
-- With alpha-beta pruning: often much smaller in practice, especially with good move ordering
+- Standard Minimax: `O(b^d)`
+- With Alpha-Beta Pruning: often much smaller in practice, especially when move ordering is effective
 
 ### Space Complexity
 
 - `O(d)` recursion depth
-- Board is modified in-place and then restored (undo move), so memory usage stays low
+- The board is modified in place and then restored with an undo move, so memory usage stays low
 
 ---
 
@@ -259,20 +260,20 @@ Let:
 
 This approach performs well for Connect Four because:
 
-- the game tree is large but finite
-- alpha-beta pruning removes many useless branches
-- center-first move ordering improves pruning efficiency
-- heuristic evaluation helps approximate positions when full depth search is not feasible
+- the game tree is large but finite,
+- Alpha-Beta Pruning removes many useless branches,
+- center-first move ordering improves pruning efficiency,
+- heuristic evaluation approximates positions when a full-depth search is not feasible.
 
-This gives a strong AI without requiring enormous computation.
+This allows the AI to play strongly without requiring excessive computation.
 
 ---
 
 ## 11. Example of AI Decision Making
 
-Suppose the human is one move away from winning. The AI search will examine the possible next moves and detect that allowing the human to complete four in a row would lead to a very bad score. The minimax search will therefore choose a move that blocks the threat or creates a stronger position.
+Suppose the human is one move away from winning. The AI search will examine the possible next moves and detect that allowing the human to complete four in a row would lead to a very poor result. It will therefore choose a move that prevents the opponent's win or creates a stronger position for itself.
 
-In other words, the AI is not just playing greedily. It is analyzing future positions and choosing the move that maximizes its chance of winning while minimizing the opponent's chances.
+In other words, the AI is not simply playing greedily. It is analyzing future positions and choosing the move that maximizes its chance of winning while minimizing the opponent's chances.
 
 ---
 
@@ -280,12 +281,12 @@ In other words, the AI is not just playing greedily. It is analyzing future posi
 
 Possible improvements for this project include:
 
-- transposition table for caching board states
-- iterative deepening with a time limit
-- stronger heuristic weighting
-- Monte Carlo Tree Search (MCTS) comparison
+- a transposition table for caching board states,
+- iterative deepening with a time limit,
+- a stronger heuristic weighting,
+- Monte Carlo Tree Search (MCTS) comparison.
 
-These enhancements would improve both speed and strength of play.
+These enhancements would improve both speed and playing strength.
 
 ---
 
@@ -293,12 +294,12 @@ These enhancements would improve both speed and strength of play.
 
 The AI in this project uses:
 
-1. a board state representation
-2. legal move generation
-3. win detection
-4. minimax search
-5. alpha-beta pruning
-6. heuristic evaluation at depth limits
-7. difficulty-based depth selection
+1. a board state representation,
+2. legal move generation,
+3. win detection,
+4. Minimax search,
+5. Alpha-Beta Pruning,
+6. heuristic evaluation at depth limits,
+7. difficulty-based depth selection.
 
-This makes the AI capable of playing Connect Four at a strong level while remaining fast enough for a browser or desktop application.
+This makes the AI capable of playing Connect Four at a strong level while remaining fast enough for both browser and desktop use.
