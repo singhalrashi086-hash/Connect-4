@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -64,7 +64,7 @@
       <option selected>Medium</option>
       <option>Hard</option>
     </select>
-    <label><input type="checkbox" id="aiFirst"> AI pehle khele</label>
+    <label><input type="checkbox" id="aiFirst"> AI moves first</label>
     <button id="newGame">New Game</button>
   </div>
 
@@ -78,8 +78,8 @@
 // 1. GAME ENGINE ---------------------------------------------
 const ROWS = 6, COLS = 7, EMPTY = 0, HUMAN = 1, AI = 2;
 
-// Columns centre se bahar ki taraf: [3,2,4,1,5,0,6]
-// Centre pehle try karne se alpha-beta zyada branches kaat pata hai.
+// Columns ordered from the center outward: [3,2,4,1,5,0,6]
+// Testing center moves first improves alpha-beta pruning efficiency.
 const COLUMN_ORDER = Array.from({ length: COLS }, (_, i) => i)
   .sort((a, b) => Math.abs(a - 3) - Math.abs(b - 3));
 
@@ -128,7 +128,7 @@ function scoreWindow(win, piece) {
   if (mine === 4) return 100;
   if (mine === 3 && empty === 1) return 5;
   if (mine === 2 && empty === 2) return 2;
-  if (theirs === 3 && empty === 1) return -4;   // opponent jeetne wala hai: block
+  if (theirs === 3 && empty === 1) return -4;   // opponent is close to winning: block it
   return 0;
 }
 
@@ -156,14 +156,14 @@ const WIN_SCORE = 1000000;
 
 function minimax(board, depth, alpha, beta, maximizing, stats) {
   stats.nodes++;
-  if (winningCells(board, AI))    return [null,  WIN_SCORE + depth];  // jaldi jeet = better
-  if (winningCells(board, HUMAN)) return [null, -WIN_SCORE - depth];  // der se haar = better
+  if (winningCells(board, AI))    return [null,  WIN_SCORE + depth];
+  if (winningCells(board, HUMAN)) return [null, -WIN_SCORE - depth];
   const moves = validColumns(board);
-  if (moves.length === 0) return [null, 0];                           // draw
+  if (moves.length === 0) return [null, 0];
   if (depth === 0) return [null, evaluate(board, AI)];
 
   let bestCol = moves[0];
-  if (maximizing) {                                // AI ki baari: MAX
+  if (maximizing) {
     let value = -Infinity;
     for (const col of moves) {
       const row = dropPiece(board, col, AI);
@@ -171,10 +171,10 @@ function minimax(board, depth, alpha, beta, maximizing, stats) {
       undoPiece(board, row, col);
       if (score > value) { value = score; bestCol = col; }
       alpha = Math.max(alpha, value);
-      if (alpha >= beta) break;                    // PRUNE
+      if (alpha >= beta) break;
     }
     return [bestCol, value];
-  } else {                                         // Human ki baari: MIN
+  } else {
     let value = Infinity;
     for (const col of moves) {
       const row = dropPiece(board, col, HUMAN);
@@ -182,7 +182,7 @@ function minimax(board, depth, alpha, beta, maximizing, stats) {
       undoPiece(board, row, col);
       if (score < value) { value = score; bestCol = col; }
       beta = Math.min(beta, value);
-      if (alpha >= beta) break;                    // PRUNE
+      if (alpha >= beta) break;
     }
     return [bestCol, value];
   }
@@ -222,7 +222,7 @@ if (typeof document !== "undefined") {
 
   function setStatus(t) { statusEl.textContent = t; }
   function updateScore() {
-    scoreEl.textContent = `You: ${score.you}   Computer: ${score.ai}   Draw: ${score.draw}`;
+    scoreEl.textContent = `You: ${score.you}   Computer: ${score.ai}   Draws: ${score.draw}`;
   }
 
   function render(lastRow = -1, lastCol = -1) {
@@ -261,11 +261,11 @@ if (typeof document !== "undefined") {
     updateScore();
     if (aiFirstEl.checked) {
       busy = true;
-      setStatus("Computer soch raha hai...");
+      setStatus("Computer is thinking...");
       const gid = gameId;
       setTimeout(() => aiTurn(gid), 400);
     } else {
-      setStatus("Aapki baari (Red) - column par tap karein");
+      setStatus("Your turn (Red) - click a column");
     }
   }
 
@@ -282,7 +282,7 @@ if (typeof document !== "undefined") {
     setTimeout(() => {
       if (gid !== gameId) return;
       if (checkEnd(HUMAN)) return;
-      setStatus("Computer soch raha hai...");
+      setStatus("Computer is thinking...");
       setTimeout(() => aiTurn(gid), 250);
     }, ANIM_MS);
   }
@@ -297,7 +297,7 @@ if (typeof document !== "undefined") {
       if (gid !== gameId) return;
       if (checkEnd(AI)) return;
       busy = false;
-      setStatus("Aapki baari (Red)");
+      setStatus("Your turn (Red)");
     }, ANIM_MS);
   }
 
@@ -306,14 +306,14 @@ if (typeof document !== "undefined") {
     if (cells) {
       winCells = cells; gameOver = true; busy = false;
       render();
-      if (piece === HUMAN) { score.you++; setStatus("Aap jeet gaye! 🎉"); }
-      else { score.ai++; setStatus("Computer jeet gaya!"); }
+      if (piece === HUMAN) { score.you++; setStatus("You win! 🎉"); }
+      else { score.ai++; setStatus("Computer wins!"); }
       updateScore();
       return true;
     }
     if (boardFull(board)) {
       gameOver = true; busy = false;
-      score.draw++; setStatus("Match draw!"); updateScore();
+      score.draw++; setStatus("Match drawn!"); updateScore();
       return true;
     }
     return false;
